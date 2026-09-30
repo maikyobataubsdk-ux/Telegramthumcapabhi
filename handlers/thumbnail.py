@@ -164,17 +164,23 @@ async def process_thumb_done(message: Message, state: FSMContext, bot):
 
                         # Send edited video with original caption preserved
                         video_file = FSInputFile(out_video_path)
-                        thumb_file = FSInputFile(thumbnail_path)
+                        thumb_file = FSInputFile(thumbnail_path) if os.path.exists(thumbnail_path) else None
 
-                        await bot.send_video(
-                            chat_id=message.chat.id,
-                            video=video_file,
-                            thumbnail=thumb_file,
-                            duration=duration,
-                            width=width,
-                            height=height,
-                            caption=vid["caption"]
-                        )
+                        kwargs = {
+                            "chat_id": message.chat.id,
+                            "video": video_file,
+                            "caption": vid["caption"]
+                        }
+                        if thumb_file:
+                            kwargs["thumbnail"] = thumb_file
+                        if duration:
+                            kwargs["duration"] = duration
+                        if width:
+                            kwargs["width"] = width
+                        if height:
+                            kwargs["height"] = height
+
+                        await bot.send_video(**kwargs)
                         successful += 1
                         await db.increment_stats(user_id, "thumbnail_edits", 1)
                     else:
