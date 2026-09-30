@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from database import db
+import database
 from states.states import BotStates
 from keyboards.admin import get_admin_panel_keyboard, get_admin_back_keyboard, get_fs_admin_keyboard
 from services.broadcast import BroadcastService
@@ -19,16 +19,38 @@ router = Router()
 
 BOT_START_TIME = time.time()
 
+ADMIN_COMMANDS = {
+    "/admin", "/stats", "/broadcast", "/ban", "/unban",
+    "/user", "/users", "/setfs", "/delfs", "/fsstatus",
+    "/maintenance", "/logs", "/settings", "/restart", "/migrate"
+}
+
 async def admin_filter(event: Message | CallbackQuery) -> bool:
     user_id = event.from_user.id
-    is_adm = await db.is_admin(user_id)
-    if not is_adm:
-        if isinstance(event, Message):
-            await event.answer("❌ You are not authorized to use admin commands.")
-        elif isinstance(event, CallbackQuery):
-            await event.answer("❌ You are not authorized to perform this action.", show_alert=True)
-        return False
-    return True
+    is_adm = await database.db.is_admin(user_id)
+    if is_adm:
+        return True
+
+    # User is not an admin. Only send unauthorized error if event is an explicit admin command/callback.
+    is_admin_event = False
+    text = getattr(event, "text", None) or getattr(event, "caption", None) or ""
+    data = getattr(event, "data", None) or ""
+
+    if text:
+        cmd = text.split()[0].lower().split("@")[0]
+        if cmd in ADMIN_COMMANDS:
+            is_admin_event = True
+    elif data and data.startswith("admin_"):
+        is_admin_event = True
+
+    if is_admin_event:
+        if hasattr(event, "answer"):
+            try:
+                await event.answer("❌ You are not authorized to use admin commands.")
+            except TypeError:
+                await event.answer("❌ You are not authorized to perform this action.", show_alert=True)
+
+    return False
 
 router.message.filter(admin_filter)
 router.callback_query.filter(admin_filter)
