@@ -1,0 +1,36 @@
+{
+  "users": {
+    "12345": {
+      "user_id": 12345,
+      "username": "testuser",
+      "first_name": "Test",
+      "last_name": "User",
+      "joined_at": 1790755229,
+      "last_active": 1790755229,
+      "videos_processed": 1,
+      "thumbnail_edits": 1,
+      "caption_edits": 0
+    }
+  },
+  "admins": [],
+  "banned_users": [],
+  "settings": {
+    "force_subscribe": false,
+    "force_subscribe_channel": null,
+    "force_subscribe_link": null,
+    "maintenance": false
+  },
+  "statistics": {
+    "total_users": 1,
+    "videos_processed": 1,
+    "thumbnail_edits": 1,
+    "caption_edits": 0,
+    "daily_stats": {
+      "2026-09-30": {
+        "thumbnail_edits": 1,
+        "caption_edits": 0,
+        "videos_processed": 1
+      }
+    }
+  }
+}
