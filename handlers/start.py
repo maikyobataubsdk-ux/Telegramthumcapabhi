@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
 from database import db
@@ -11,42 +11,50 @@ from utils.cleanup import cleanup_user_temp
 
 router = Router()
 
-START_TEXT = (
-    "🎬 **VIDEO EDITOR BOT**\n\n"
-    "Welcome to the advanced Telegram Video Editor.\n\n"
-    "✨ **Features:**\n"
-    "• Change video thumbnails\n"
-    "• Change video captions\n"
-    "• Process multiple videos\n"
-    "• Fast processing\n"
-    "• Simple interface\n"
-    "• Automatic cleanup"
-)
+def get_start_text(name: str) -> str:
+    return (
+        f"𝖧𝖾𝗒 {name}\n\n"
+        "๏ 𝖸𝗈𝗎’𝗋𝖾 𝗍𝖺𝗅𝗄𝗂𝗇𝗀 𝗍𝗈 @Starkeditbot ✨!\n\n"
+        "➻ 𝖠 𝗉𝗋𝖾𝗆𝗂𝗎𝗆, 𝗉𝗈𝗐𝖾𝗋𝗉𝖺𝖼𝗄𝖾𝖽 𝖳𝗁𝗎𝗆𝖻𝗇𝖺𝗂𝗅 𝖺𝗇𝖽 𝖢𝖺𝗉𝗍𝗂𝗈𝗇 𝖡𝗈𝗍.\n"
+        "────────────────────\n"
+        "๏ 𝖳𝗋𝗒 𝗛𝗲𝗹𝗽 𝗍𝗈 𝖽𝗂𝗌𝖼𝗈𝗏𝖾𝗋 𝖺𝗅𝗅 𝗍𝗁𝖾 𝖿ull 𝖼𝗈𝗆𝗆𝖺𝗇𝖽𝗌 𝖺𝗇𝖽 𝖿𝖾𝖺𝗍𝗎𝗋𝖾𝗌!"
+    )
+
+def get_help_text(user) -> str:
+    name = user.full_name or user.first_name
+    username = f"@{user.username}" if user.username else "N/A"
+    userid = user.id
+    return (
+        "🎯 Hᴇʟᴘ Cᴇɴᴛᴇʀ\n\n"
+        f"💫 Hᴇʏ {name}\n\n"
+        "┏━━━━━━━━━━━━━━━━━━┓\n"
+        "┃  ⚡ Sᴘᴇᴄɪᴀʟ Fᴇᴀᴛᴜʀᴇs  ┃\n"
+        "┗━━━━━━━━━━━━━━━━━━┛\n\n"
+        "🚀 Lɪɢʜᴛɴɪɴɢ Fᴀsᴛ - Iɴsᴛᴀɴᴛ ᴅᴇʟɪᴠᴇʀY\n"
+        "🔒 Sᴜᴘᴇʀ Sᴇᴄᴜʀᴇ - Eɴᴄʀʏᴘᴛᴇᴅ\n"
+        "⏰ 24/7 Oɴʟɪɴᴇ - Aʟᴡᴀʏs ᴀᴠᴀɪʟᴀʙʟᴇ\n\n"
+        "┏━━━━━━━━━━━━━━━━━━┓\n"
+        "┃  ⚠️ Rᴜʟᴇs & Rᴇǫᴜɪʀᴇᴍᴇɴᴛs  ┃\n"
+        "┗━━━━━━━━━━━━━━━━━━┛\n\n"
+        "❗ Jᴏɪɴ ALL ᴍᴇɴᴛɪᴏɴᴇᴅ ᴄʜᴀɴɴᴇʟs (ᴍᴀɴᴅᴀᴛᴏʀY)\n"
+        "❗ Dᴏɴ'ᴛ ʟᴇᴀᴠᴇ ᴀғᴛᴇʀ ɢᴇᴛᴛɪɴɢ ᴛʜᴇ ғɪʟᴇ\n"
+        "❗ Sᴛᴀʏ ᴀs ᴀ ᴍᴇᴍʙᴇʀ ғᴏʀ ғᴜᴛᴜʀᴇ ᴀᴄᴄᴇss\n"
+        "✅ Fᴏʟʟᴏᴡ ʀᴜʟᴇs ғᴏʀ ᴜɴɪɴᴛᴇʀʀᴜᴘᴛᴇᴅ sᴇʀᴠɪCᴇ\n\n"
+        "┏━━━━━━━━━━━━━━━━━━┓\n"
+        "┃  👤 Yᴏᴜʀ Pʀᴏғɪʟᴇ  ┃\n"
+        "┗━━━━━━━━━━━━━━━━━━┛\n\n"
+        f"📛 Nᴀᴍᴇ: {name}\n"
+        f"🔖 Usᴇʀɴᴀᴍᴇ: {username}\n"
+        f"🆔 Usᴇʀ ID: {userid}\n\n"
+        "━━━━━━━━━━━━━━━━━━━\n\n"
+        "💡 Tɪᴘ: Usᴇ /start ᴛᴏ ɢᴏ ʙᴀᴄᴋ ᴛᴏ ᴍᴀɪɴ ᴍᴇɴᴜ"
+    )
 
 ABOUT_TEXT = (
-    "ℹ️ **ABOUT**\n\n"
-    "🎬 **Thumbnail & Caption Editor**\n"
-    "A Telegram-based video editing utility.\n\n"
-    "**Features:**\n"
-    "🖼 Thumbnail Editor\n"
-    "📝 Caption Editor\n"
-    "🎥 Multiple Video Support\n"
-    "⚡ Fast Processing\n"
-    "🛡 Secure Sessions\n"
-    "🧹 Automatic Cleanup\n\n"
-    "Made with ❤️"
-)
-
-HELP_TEXT = (
-    "HELP\n\n"
-    "🖼 **THUMBNAIL**\n"
-    "/thum\n"
-    "Send your thumbnail, then send your videos. When finished, use /done.\n\n"
-    "📝 **CAPTION**\n"
-    "/cap\n"
-    "Send your video, then send the new caption. Use /done to finish.\n\n"
-    "/cancel\n"
-    "Cancel the current operation."
+    '◈ ᴄʀᴇᴀᴛᴏʀ: <a href="https://t.me/the_Jarvis_bots">jarvis</a>\n'
+    '◈ ꜰᴏᴜɴᴅᴇʀ ᴏꜰ : <a href="https://t.me/the_Jarvis_bots">jarvis</a>\n'
+    '◈ ᴅᴀᴛᴀʙᴀsᴇ: ᴍᴏɴɢᴏ ᴅʙ\n'
+    '» ᴅᴇᴠᴇʟᴏᴘᴇʀ: <a href="https://t.me/the_Jarvis_bots">jarvis</a>'
 )
 
 async def _edit_or_caption(callback: CallbackQuery, text: str, reply_markup):
@@ -68,21 +76,29 @@ async def cmd_start(message: Message, state: FSMContext):
     # Check maintenance
     settings = await db.get_settings()
     if settings.get("maintenance", False) and not await db.is_admin(user.id):
-        await message.answer("🛠 **MAINTENANCE MODE**\nThe bot is currently under maintenance.\nPlease try again later.")
+        await message.answer("🛠 <b>MAINTENANCE MODE</b>\nThe bot is currently under maintenance.\nPlease try again later.")
         return
+
+    start_text = get_start_text(user.full_name or user.first_name)
 
     if config.START_IMAGE_URL:
         try:
             await message.answer_photo(
                 photo=config.START_IMAGE_URL,
-                caption=START_TEXT,
+                caption=start_text,
                 reply_markup=get_start_keyboard()
             )
             return
         except Exception:
             pass
 
-    await message.answer(START_TEXT, reply_markup=get_start_keyboard())
+    await message.answer(start_text, reply_markup=get_start_keyboard())
+
+@router.message(Command("help"))
+async def cmd_help(message: Message):
+    user = message.from_user
+    help_text = get_help_text(user)
+    await message.answer(help_text, reply_markup=get_back_keyboard())
 
 @router.callback_query(F.data == "nav_about")
 async def cb_about(callback: CallbackQuery):
@@ -91,10 +107,13 @@ async def cb_about(callback: CallbackQuery):
 
 @router.callback_query(F.data == "nav_help")
 async def cb_help(callback: CallbackQuery):
-    await _edit_or_caption(callback, HELP_TEXT, get_back_keyboard())
+    help_text = get_help_text(callback.from_user)
+    await _edit_or_caption(callback, help_text, get_back_keyboard())
     await callback.answer()
 
 @router.callback_query(F.data == "nav_start")
 async def cb_start_back(callback: CallbackQuery):
-    await _edit_or_caption(callback, START_TEXT, get_start_keyboard())
+    user = callback.from_user
+    start_text = get_start_text(user.full_name or user.first_name)
+    await _edit_or_caption(callback, start_text, get_start_keyboard())
     await callback.answer()

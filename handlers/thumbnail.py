@@ -30,14 +30,14 @@ async def check_user_eligibility(user_id: int, message: Message, bot) -> bool:
     # 2. Maintenance check
     settings = await db.get_settings()
     if settings.get("maintenance", False) and not await db.is_admin(user_id):
-        await message.answer("🛠 **MAINTENANCE MODE**\nThe bot is currently under maintenance.\nPlease try again later.")
+        await message.answer("🛠 <b>MAINTENANCE MODE</b>\nThe bot is currently under maintenance.\nPlease try again later.")
         return False
 
     # 3. Force Subscribe check
     is_joined, link = await ForceSubscribeService.is_user_subscribed(bot, user_id)
     if not is_joined and link:
         await message.answer(
-            "🔐 **JOIN REQUIRED**\n"
+            "🔐 <b>JOIN REQUIRED</b>\n"
             "To use this bot, you must first join our required channel.\n"
             "👇 Join the channel and then verify your membership.",
             reply_markup=get_force_sub_keyboard(link)
@@ -66,7 +66,7 @@ async def cmd_thum(message: Message, state: FSMContext, bot):
     )
 
     await message.answer(
-        "🖼 **THUMBNAIL EDITOR**\n"
+        "🖼 <b>THUMBNAIL EDITOR</b>\n"
         "Please send the thumbnail photo you want to use.\n"
         "This thumbnail will be applied to all videos in this session.",
         reply_markup=get_cancel_keyboard()
@@ -90,7 +90,7 @@ async def process_thumb_photo(message: Message, state: FSMContext, bot):
     await state.set_state(BotStates.THUMB_WAITING_VIDEOS)
 
     await message.answer(
-        "✅ **THUMBNAIL RECEIVED**\n"
+        "✅ <b>THUMBNAIL RECEIVED</b>\n"
         "Now send all the videos you want to edit.\n"
         "You can send multiple videos.\n"
         "When finished, send:\n/done",
@@ -135,7 +135,7 @@ async def process_thumb_done(message: Message, state: FSMContext, bot):
         return
 
     await state.set_state(BotStates.THUMB_PROCESSING)
-    status_msg = await message.answer(f"⏳ **PROCESSING**\nFound: {len(videos)} videos\nApplying your thumbnail...")
+    status_msg = await message.answer(f"⏳ <b>PROCESSING</b>\nFound: {len(videos)} videos\nApplying your thumbnail...")
 
     total = len(videos)
     successful = 0
@@ -187,7 +187,7 @@ async def process_thumb_done(message: Message, state: FSMContext, bot):
                     cleanup_path(os.path.join(temp_dir, f"output_{idx}.mp4"))
 
         await status_msg.edit_text(
-            f"✅ **PROCESSING COMPLETE**\n\n"
+            f"✅ <b>PROCESSING COMPLETE</b>\n\n"
             f"Total: {total}\n"
             f"✅ Successful: {successful}\n"
             f"❌ Failed: {failed}"

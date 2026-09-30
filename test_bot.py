@@ -4,6 +4,7 @@ import shutil
 import unittest
 from database import Database, db
 from services.caption import CaptionService
+from handlers.start import get_start_text, get_help_text, ABOUT_TEXT
 from services.video import VideoService
 from services.force_subscribe import ForceSubscribeService
 from utils.cleanup import generate_session_id, get_user_temp_dir, cleanup_user_temp, cleanup_path
@@ -60,6 +61,26 @@ class TestSystem(unittest.IsolatedAsyncioTestCase):
 
         time_str = format_time(3665)
         self.assertEqual(time_str, "1h 1m 5s")
+
+    async def test_start_help_about_formatting(self):
+        class DummyUser:
+            full_name = "Alex Smith"
+            first_name = "Alex"
+            username = "alexsmith"
+            id = 12345678
+
+        user = DummyUser()
+        start_txt = get_start_text("Alex Smith")
+        self.assertIn("Starkeditbot", start_txt)
+
+        help_txt = get_help_text(user)
+        self.assertIn("🎯 Hᴇʟᴘ Cᴇɴᴛᴇʀ", help_txt)
+        self.assertIn("Alex Smith", help_txt)
+        self.assertIn("@alexsmith", help_txt)
+        self.assertIn("12345678", help_txt)
+
+        self.assertIn("https://t.me/the_Jarvis_bots", ABOUT_TEXT)
+        self.assertIn("jarvis", ABOUT_TEXT)
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,7 @@ async def cb_check_force_sub(callback: CallbackQuery, bot):
     if is_joined:
         await callback.answer("✅ Thank you for joining! Access granted.", show_alert=True)
         await callback.message.edit_text(
-            "🎉 **MEMBERSHIP VERIFIED!**\n\n"
+            "🎉 <b>MEMBERSHIP VERIFIED!</b>\n\n"
             "You now have full access to the bot features.\n"
             "Use /thum to edit thumbnails or /cap to edit captions."
         )
@@ -36,7 +36,7 @@ async def handle_cancel(event: Message | CallbackQuery, state: FSMContext):
     cleanup_user_temp(user_id)
 
     msg_text = (
-        "❌ **OPERATION CANCELLED**\n"
+        "❌ <b>OPERATION CANCELLED</b>\n"
         "You can start a new operation whenever you want."
     )
 

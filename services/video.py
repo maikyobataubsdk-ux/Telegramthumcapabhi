@@ -72,9 +72,12 @@ class VideoService:
             "-y",
             "-i", input_video_path,
             "-i", thumbnail_path,
-            "-map", "0",
-            "-map", "1",
-            "-c", "copy",
+            "-map", "0:v:0",
+            "-map", "0:a?",
+            "-map", "1:v:0",
+            "-c:v:0", "copy",
+            "-c:a", "copy",
+            "-c:v:1", "mjpeg",
             "-disposition:v:1", "attached_pic",
             output_video_path
         ]
@@ -88,10 +91,31 @@ class VideoService:
             stdout, stderr = await proc.communicate()
             if proc.returncode == 0 and os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
                 return True
-            else:
-                logger.warning(f"FFmpeg stream copy failed: {stderr.decode()}. Falling back to input video copy.")
-                shutil.copyfile(input_video_path, output_video_path)
+
+            logger.warning(f"FFmpeg primary stream attach failed: {stderr.decode()}. Attempting fallback mode...")
+            # Fallback FFmpeg command
+            cmd_fallback = [
+                ffmpeg,
+                "-y",
+                "-i", input_video_path,
+                "-i", thumbnail_path,
+                "-map", "0",
+                "-map", "1",
+                "-c", "copy",
+                output_video_path
+            ]
+            proc_fb = await asyncio.create_subprocess_exec(
+                *cmd_fallback,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            _, stderr_fb = await proc_fb.communicate()
+            if proc_fb.returncode == 0 and os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
                 return True
+
+            logger.warning(f"FFmpeg fallback failed: {stderr_fb.decode()}. Copying original video file.")
+            shutil.copyfile(input_video_path, output_video_path)
+            return True
         except Exception as e:
             logger.error(f"Error running FFmpeg: {e}")
             shutil.copyfile(input_video_path, output_video_path)

@@ -35,7 +35,7 @@ async def cmd_cap(message: Message, state: FSMContext, bot):
     )
 
     await message.answer(
-        "📝 **CAPTION EDITOR**\n"
+        "📝 <b>CAPTION EDITOR</b>\n"
         "Please send the video whose caption you want to change.",
         reply_markup=get_cancel_keyboard()
     )
@@ -54,7 +54,7 @@ async def process_cap_video(message: Message, state: FSMContext):
     await state.set_state(BotStates.CAP_WAITING_CAPTION)
 
     await message.answer(
-        "🎬 **VIDEO RECEIVED**\n"
+        "🎬 <b>VIDEO RECEIVED</b>\n"
         "Now send the new caption.\n"
         "Support text, emoji, line breaks, and Telegram-supported formatting where appropriate.",
         reply_markup=get_cancel_keyboard()
@@ -75,7 +75,7 @@ async def process_cap_text(message: Message, state: FSMContext):
     await state.update_data(new_caption=formatted_caption)
 
     await message.answer(
-        "✅ **CAPTION RECEIVED**\n"
+        "✅ <b>CAPTION RECEIVED</b>\n"
         "Your caption has been saved.\n"
         "Send /done to generate the edited video.",
         reply_markup=get_cancel_keyboard()
@@ -98,7 +98,7 @@ async def process_cap_done(message: Message, state: FSMContext, bot):
         return
 
     await state.set_state(BotStates.CAP_PROCESSING)
-    status_msg = await message.answer("⏳ **PROCESSING**\nApplying your new caption...")
+    status_msg = await message.answer("⏳ <b>PROCESSING</b>\nApplying your new caption...")
 
     try:
         async with semaphore:
@@ -114,7 +114,7 @@ async def process_cap_done(message: Message, state: FSMContext, bot):
 
             await db.increment_stats(user_id, "caption_edits", 1)
 
-        await status_msg.edit_text("✅ **PROCESSING COMPLETE**\nYour video with the new caption has been delivered!")
+        await status_msg.edit_text("✅ <b>PROCESSING COMPLETE</b>\nYour video with the new caption has been delivered!")
 
     except Exception as e:
         logger.error(f"Error processing caption update for user {user_id}: {e}")
